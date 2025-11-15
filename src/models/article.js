@@ -1,21 +1,9 @@
 const mongoose = require('mongoose');
 
-const Schema = mongoose.Schema;
+const ArticleSchema = new mongoose.Schema({
+  _id: { type: Number, required: true }, // numeric id 1,2,...
+  title: String,
+  description: String
+}, { timestamps: true }); // adds createdAt, updatedAt
 
-const articleSchema = new Schema(
-    {
-        title: {
-            type: String,
-            required: true,
-        },
-        description: {
-            type: String,
-            required: true,
-        }
-    },
-    {
-        timestamps: true
-    }
-);
-
-module.exports = mongoose.model('Article', articleSchema);
+module.exports = mongoose.model('Article', ArticleSchema);

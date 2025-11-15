@@ -8,6 +8,8 @@ const graphqlLatencyHistogram = new client.Histogram({
 });
 
 module.exports = (app, httpServer) => {
+    const express = require('express');
+    app.use('/graphql', express.json()); // ensure body parsing before metrics middleware
     // Middleware ghi metric CHỈ khi query có article / articles
     app.use('/graphql', (req, res, next) => {
         // Body chưa parse hoặc không phải operation GraphQL

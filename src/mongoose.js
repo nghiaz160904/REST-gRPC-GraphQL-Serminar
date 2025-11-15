@@ -20,14 +20,21 @@ mongoose
   .then(async () => {
     console.log('[mongoose] connected');
     if (SEED_ON_STARTUP) {
-      const col = mongoose.connection.db.collection('articles');
-      let existing = await col.estimatedDocumentCount();
+      const db = mongoose.connection.db;
+      const articlesCol = db.collection('articles');
+      const commentsCol = db.collection('comments');
+      let existing = await articlesCol.estimatedDocumentCount();
 
-      if (SEED_RESET && existing > 0) {
-        console.log('[mongoose] dropping articles collection before reseed...');
-        await col.drop().catch(err => {
-          if (err.codeName !== 'NamespaceNotFound') throw err;
-        });
+      if (SEED_RESET) {
+        console.log('[mongoose] dropping articles and comments collections before reseed...');
+        await Promise.all([
+          articlesCol.drop().catch(err => {
+            if (err.codeName !== 'NamespaceNotFound') throw err;
+          }),
+          commentsCol.drop().catch(err => {
+            if (err.codeName !== 'NamespaceNotFound') throw err;
+          }),
+        ]);
         existing = 0;
       }
 
@@ -39,9 +46,15 @@ mongoose
         seedState.target = missing;
         seedState.done = 0;
 
-        // Nếu createArticles hỗ trợ callback tiến độ: createArticles(count, onProgress)
-        // seedState.done sẽ được cập nhật trong callback.
-        await createArticles(missing /*, (n) => { seedState.done = n; if (n % 10000 === 0) console.log(\`[mongoose] seeded \${n}/\${missing}\`);} */);
+        await createArticles(
+          missing,
+          (n) => {
+            seedState.done = n;
+            if (n % 10000 === 0) {
+              console.log(`[mongoose] seeded ${n}/${missing}`);
+            }
+          }
+        );
 
         seedState.seeding = false;
         console.log('[mongoose] seeding done');

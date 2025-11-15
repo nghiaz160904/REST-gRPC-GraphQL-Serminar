@@ -12,7 +12,8 @@ services:
       METRICS_DEBUG: "1"
       MONGO_URL: mongodb://mongodb:27017/metricsdemo
       SEED_ON_STARTUP: "true"
-      SEED_ARTICLES_COUNT: "300000"
+      SEED_RESET: "true"
+      SEED_ARTICLES_COUNT: "100000"
     ports:
       - "4000:4000"    # REST/GraphQL/Metrics
       - "50051:50051"  # gRPC
