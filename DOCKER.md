@@ -204,3 +204,48 @@ Dừng và xoá dữ liệu:
 ```bash
 docker compose down -v
 ```
+
+---
+
+## 9) Chạy script auto (pump REST/GraphQL/gRPC)
+
+Script: scrripts/pump_getArticle_all.sh
+
+Yêu cầu:
+- Dịch vụ đã chạy: REST/GraphQL trên 4000, gRPC trên 50051
+- Công cụ: curl và grpcurl
+
+Cài nhanh trên máy host (Linux):
+```bash
+sudo apt update && sudo apt install -y curl
+# cài grpcurl (nếu có Go)
+go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
+export PATH="$HOME/go/bin:$PATH"
+```
+
+Chạy script:
+```bash
+chmod +x scrripts/pump_getArticle_all.sh
+bash scrripts/pump_getArticle_all.sh <ARTICLE_ID> [--interval=1] [--count=0]
+```
+
+Ví dụ:
+```bash
+# pump mãi (Ctrl+C để dừng), mỗi 1s, id=1
+bash scrripts/pump_getArticle_all.sh 1
+
+# 0.2s/lần, 20 lần rồi dừng
+bash scrripts/pump_getArticle_all.sh 1 --interval=0.2 --count=20
+
+# id khác
+bash scrripts/pump_getArticle_all.sh 42 --interval=0.5
+```
+
+Ghi chú:
+- GraphQL schema yêu cầu id kiểu String!, script đã gửi biến "id" dạng chuỗi.
+- Nếu cổng/địa chỉ khác, chỉnh REST_URL/GRAPHQL_URL/GRPC_TARGET trong script.
+- Nếu báo “grpcurl: command not found”, cài grpcurl như trên.
+
+Khắc phục nhanh:
+- GraphQL 400 GRAPHQL_VALIDATION_FAILED: kiểm tra id có đúng kiểu String! (script đã dùng) và endpoint /graphql có nhận JSON (app.use(express.json())).
+- gRPC chậm vài chục ms là do grpcurl khởi tạo kết nối mới mỗi lần; để đo chính xác hơn, viết client giữ kết nối persistent.
