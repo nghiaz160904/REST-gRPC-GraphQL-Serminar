@@ -6,8 +6,8 @@ WORKDIR /app/src
 # Copy package trước để cache
 COPY src/package*.json ./
 
-# Chỉ cài production deps để tránh grpcc/grpc native
-RUN npm ci --omit=dev
+# Cài deps
+RUN npm install
 
 # Copy toàn bộ source
 WORKDIR /app
