@@ -1,0 +1,5 @@
+groups:
+  - name: rest_metrics
+    rules:
+      - record: rest_request_duration_seconds_sum_renamed
+        expr: sum(rate(rest_request_duration_seconds_sum[5m])) by (method, status_code)

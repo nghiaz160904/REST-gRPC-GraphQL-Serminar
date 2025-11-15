@@ -1,0 +1,77 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: src/Dockerfile
+    container_name: app
+    environment:
+      ACCESS_TOKEN_SECRET: devsecret
+      CORS_ALLOWED_DOMAIN: http://localhost:4000
+      METRICS_DEBUG: "1"
+      MONGO_URL: mongodb://mongodb:27017/metricsdemo
+      SEED_ON_STARTUP: "true"
+      SEED_ARTICLES_COUNT: "300000"
+    ports:
+      - "4000:4000"    # REST/GraphQL/Metrics
+      - "50051:50051"  # gRPC
+    volumes:
+      - .:/app
+    working_dir: /app/src
+    command: node index.js
+    depends_on:
+      - mongodb
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"http=require('http');http.get('http://localhost:4000/ready',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  mongodb:
+    image: mongo:6
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prom-data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+    restart: unless-stopped
+
+  # Tool test gRPC (không cần native module)
+  grpcurl:
+    image: alpine:3.20
+    container_name: grpcurl
+    network_mode: host
+    entrypoint: ["/bin/sh","-lc","apk add --no-cache grpcurl && tail -f /dev/null"]
+    depends_on:
+      - app
+
+  # Tùy chọn: muốn dùng grpcc thì chạy trên Node 16 (tránh lỗi grpc native)
+  # grpcc:
+  #   image: node:16-bullseye
+  #   container_name: grpcc
+  #   working_dir: /app
+  #   volumes:
+  #     - .:/app
+  #   entrypoint: ["bash","-lc","npm i -g grpcc && bash"]
+  #   depends_on:
+  #     - app
+
+volumes:
+  prom-data:
+  mongo-data:
