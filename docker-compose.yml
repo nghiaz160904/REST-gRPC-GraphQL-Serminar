@@ -65,6 +65,23 @@ services:
     depends_on:
       - app
 
+  # Service mới để chạy pump script
+  pumper:
+    # 'build' sẽ tạo một image tùy chỉnh
+    build:
+      context: .
+      dockerfile: src/pumper.Dockerfile
+    # Không cần 'image' hay 'user: root' nữa, vì đã có trong Dockerfile
+    working_dir: /app
+    volumes:
+      - ./scripts/pump_docker.sh:/usr/local/bin/pump.sh
+      - ./src/grpc/proto:/proto
+    depends_on:
+      app:
+        condition: service_healthy
+    # Đổi entrypoint thành /bin/bash (vì chúng ta đã cài nó)
+    entrypoint: /bin/bash
+
   # Tùy chọn: muốn dùng grpcc thì chạy trên Node 16 (tránh lỗi grpc native)
   # grpcc:
   #   image: node:16-bullseye
