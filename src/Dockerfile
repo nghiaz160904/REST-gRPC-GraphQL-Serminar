@@ -7,7 +7,7 @@ WORKDIR /app/src
 COPY src/package*.json ./
 
 # Cài deps
-RUN npm install
+RUN npm ci
 
 # Copy toàn bộ source
 WORKDIR /app
