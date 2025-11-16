@@ -55,11 +55,13 @@ services:
     restart: unless-stopped
 
   # Tool test gRPC (không cần native module)
+  # ... trong file docker-compose.yml
   grpcurl:
-    image: alpine:3.20
+    image: fullstorydev/grpcurl:v1.9.1-alpine # Dùng image alpine để có shell
     container_name: grpcurl
-    network_mode: host
-    entrypoint: ["/bin/sh","-lc","apk add --no-cache grpcurl && tail -f /dev/null"]
+    entrypoint: ["/bin/ash", "-lc", "tail -f /dev/null"] # Giữ nó chạy
+    volumes:
+      - ./src/grpc/proto:/proto  # <-- THÊM DÒNG NÀY
     depends_on:
       - app
 
