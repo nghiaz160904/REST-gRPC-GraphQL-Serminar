@@ -19,6 +19,7 @@ services:
       - "50051:50051"  # gRPC
     volumes:
       - .:/app
+      - node_modules:/app/src/node_modules
     working_dir: /app/src
     command: node index.js
     depends_on:
@@ -76,3 +77,4 @@ services:
 volumes:
   prom-data:
   mongo-data:
+  node_modules:
